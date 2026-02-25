@@ -1,7 +1,7 @@
 const Category = require('../models/Category');
 const { validationResult } = require('express-validator');
+const { uploadToCloudinary } = require('../middleware/upload');
 
-// Get all categories
 exports.getAllCategories = async (req, res, next) => {
   try {
     const { status, page = 1, limit = 10 } = req.query;
@@ -35,7 +35,6 @@ exports.getAllCategories = async (req, res, next) => {
   }
 };
 
-// Get single category by ID
 exports.getCategoryById = async (req, res, next) => {
   try {
     const category = await Category.findById(req.params.id);
@@ -56,10 +55,8 @@ exports.getCategoryById = async (req, res, next) => {
   }
 };
 
-// Create new category
 exports.createCategory = async (req, res, next) => {
   try {
-    // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -71,9 +68,9 @@ exports.createCategory = async (req, res, next) => {
 
     const categoryData = { ...req.body };
 
-    // Handle image upload
     if (req.file) {
-      categoryData.image = `/uploads/categories/${req.file.filename}`;
+      const imageUrl = await uploadToCloudinary(req.file, 'real-estate/categories');
+      categoryData.image = imageUrl;
     }
 
     const category = await Category.create(categoryData);
@@ -84,7 +81,6 @@ exports.createCategory = async (req, res, next) => {
       message: 'Category created successfully'
     });
   } catch (error) {
-    // Handle duplicate key error
     if (error.code === 11000) {
       return res.status(400).json({
         success: false,
@@ -95,10 +91,8 @@ exports.createCategory = async (req, res, next) => {
   }
 };
 
-// Update category
 exports.updateCategory = async (req, res, next) => {
   try {
-    // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -110,9 +104,9 @@ exports.updateCategory = async (req, res, next) => {
 
     const categoryData = { ...req.body };
 
-    // Handle image upload
     if (req.file) {
-      categoryData.image = `/uploads/categories/${req.file.filename}`;
+      const imageUrl = await uploadToCloudinary(req.file, 'real-estate/categories');
+      categoryData.image = imageUrl;
     }
 
     const category = await Category.findByIdAndUpdate(
@@ -134,7 +128,6 @@ exports.updateCategory = async (req, res, next) => {
       message: 'Category updated successfully'
     });
   } catch (error) {
-    // Handle duplicate key error
     if (error.code === 11000) {
       return res.status(400).json({
         success: false,
@@ -145,7 +138,6 @@ exports.updateCategory = async (req, res, next) => {
   }
 };
 
-// Delete category
 exports.deleteCategory = async (req, res, next) => {
   try {
     const category = await Category.findByIdAndDelete(req.params.id);
@@ -166,7 +158,6 @@ exports.deleteCategory = async (req, res, next) => {
   }
 };
 
-// Get active categories (for dropdowns)
 exports.getActiveCategories = async (req, res, next) => {
   try {
     const categories = await Category.find({ status: 'Active' })

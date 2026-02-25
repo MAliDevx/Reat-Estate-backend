@@ -1,12 +1,11 @@
 const Property = require('../models/Property');
 const { validationResult } = require('express-validator');
+const { uploadToCloudinary } = require('../middleware/upload');
 
-// Get all properties with optional filtering
 exports.getAllProperties = async (req, res, next) => {
   try {
     const { category, status, location, page = 1, limit = 10 } = req.query;
 
-    // Build filter object
     const filter = {};
     if (category) filter.category = category;
     if (status) filter.status = status;
@@ -38,7 +37,6 @@ exports.getAllProperties = async (req, res, next) => {
   }
 };
 
-// Get single property by ID
 exports.getPropertyById = async (req, res, next) => {
   try {
     const property = await Property.findById(req.params.id);
@@ -59,10 +57,8 @@ exports.getPropertyById = async (req, res, next) => {
   }
 };
 
-// Create new property
 exports.createProperty = async (req, res, next) => {
   try {
-    // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -74,9 +70,20 @@ exports.createProperty = async (req, res, next) => {
 
     const propertyData = { ...req.body };
 
-    // Handle multiple image uploads
-    if (req.files && req.files.length > 0) {
-      propertyData.images = req.files.map(file => `/uploads/properties/${file.filename}`);
+    // Handle image uploads to Cloudinary
+    if (req.files && req.files.images && req.files.images.length > 0) {
+      const imageUrls = [];
+      for (const file of req.files.images) {
+        const url = await uploadToCloudinary(file, 'real-estate/properties');
+        imageUrls.push(url);
+      }
+      propertyData.images = imageUrls;
+    }
+
+    // Handle video upload to Cloudinary
+    if (req.files && req.files.video && req.files.video.length > 0) {
+      const videoUrl = await uploadToCloudinary(req.files.video[0], 'real-estate/properties');
+      propertyData.video = videoUrl;
     }
 
     const property = await Property.create(propertyData);
@@ -105,17 +112,29 @@ exports.updateProperty = async (req, res, next) => {
     }
 
     const propertyData = { ...req.body };
+    const existingProperty = await Property.findById(req.params.id);
 
-    // Handle multiple image uploads (append to existing images if any)
-    if (req.files && req.files.length > 0) {
-      const newImages = req.files.map(file => `/uploads/properties/${file.filename}`);
-      const existingProperty = await Property.findById(req.params.id);
+    if (!existingProperty) {
+      return res.status(404).json({
+        success: false,
+        message: 'Property not found'
+      });
+    }
 
-      if (existingProperty && existingProperty.images) {
-        propertyData.images = [...existingProperty.images, ...newImages];
-      } else {
-        propertyData.images = newImages;
+    // Handle image uploads to Cloudinary (append to existing images)
+    if (req.files && req.files.images && req.files.images.length > 0) {
+      const newImageUrls = [];
+      for (const file of req.files.images) {
+        const url = await uploadToCloudinary(file, 'real-estate/properties');
+        newImageUrls.push(url);
       }
+      propertyData.images = [...(existingProperty.images || []), ...newImageUrls];
+    }
+
+    // Handle video upload to Cloudinary (replace existing video)
+    if (req.files && req.files.video && req.files.video.length > 0) {
+      const videoUrl = await uploadToCloudinary(req.files.video[0], 'real-estate/properties');
+      propertyData.video = videoUrl;
     }
 
     const property = await Property.findByIdAndUpdate(
@@ -123,13 +142,6 @@ exports.updateProperty = async (req, res, next) => {
       propertyData,
       { new: true, runValidators: true }
     );
-
-    if (!property) {
-      return res.status(404).json({
-        success: false,
-        message: 'Property not found'
-      });
-    }
 
     res.status(200).json({
       success: true,

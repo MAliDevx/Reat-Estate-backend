@@ -10,13 +10,19 @@ router.get('/', propertyController.getAllProperties);
 router.get('/:id', propertyController.getPropertyById);
 
 router.post('/',
-  uploadPropertyImages.array('images', 3), 
+  uploadPropertyImages.fields([
+    { name: 'images', maxCount: 10 },
+    { name: 'video', maxCount: 1 }
+  ]),
   validateProperty,
   propertyController.createProperty
 );
 
 router.put('/:id',
-  uploadPropertyImages.array('images', 3), 
+  uploadPropertyImages.fields([
+    { name: 'images', maxCount: 10 },
+    { name: 'video', maxCount: 1 }
+  ]),
   validateProperty,
   propertyController.updateProperty
 );
