@@ -70,7 +70,6 @@ exports.createProperty = async (req, res, next) => {
 
     const propertyData = { ...req.body };
 
-    // Handle image uploads to Cloudinary
     if (req.files && req.files.images && req.files.images.length > 0) {
       const imageUrls = [];
       for (const file of req.files.images) {
@@ -80,7 +79,6 @@ exports.createProperty = async (req, res, next) => {
       propertyData.images = imageUrls;
     }
 
-    // Handle video upload to Cloudinary
     if (req.files && req.files.video && req.files.video.length > 0) {
       const videoUrl = await uploadToCloudinary(req.files.video[0], 'real-estate/properties');
       propertyData.video = videoUrl;
@@ -98,10 +96,8 @@ exports.createProperty = async (req, res, next) => {
   }
 };
 
-// Update property
 exports.updateProperty = async (req, res, next) => {
   try {
-    // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -121,7 +117,6 @@ exports.updateProperty = async (req, res, next) => {
       });
     }
 
-    // Handle image uploads to Cloudinary (append to existing images)
     if (req.files && req.files.images && req.files.images.length > 0) {
       const newImageUrls = [];
       for (const file of req.files.images) {
@@ -131,7 +126,6 @@ exports.updateProperty = async (req, res, next) => {
       propertyData.images = [...(existingProperty.images || []), ...newImageUrls];
     }
 
-    // Handle video upload to Cloudinary (replace existing video)
     if (req.files && req.files.video && req.files.video.length > 0) {
       const videoUrl = await uploadToCloudinary(req.files.video[0], 'real-estate/properties');
       propertyData.video = videoUrl;
@@ -153,7 +147,6 @@ exports.updateProperty = async (req, res, next) => {
   }
 };
 
-// Delete property
 exports.deleteProperty = async (req, res, next) => {
   try {
     const property = await Property.findByIdAndDelete(req.params.id);
@@ -174,7 +167,6 @@ exports.deleteProperty = async (req, res, next) => {
   }
 };
 
-// Remove specific image from property
 exports.removePropertyImage = async (req, res, next) => {
   try {
     const { imageIndex } = req.params;
@@ -194,7 +186,6 @@ exports.removePropertyImage = async (req, res, next) => {
       });
     }
 
-    // Remove the image from the array
     property.images.splice(imageIndex, 1);
     await property.save();
 

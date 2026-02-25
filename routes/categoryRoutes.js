@@ -12,13 +12,13 @@ router.get('/active', categoryController.getActiveCategories);
 router.get('/:id', categoryController.getCategoryById);
 
 router.post('/',
-  uploadCategoryImage.single('image'),
+  uploadCategoryImage.array('image', 6), // max 10 images
   validateCategory,
   categoryController.createCategory
 );
 
 router.put('/:id',
-  uploadCategoryImage.single('image'),
+  uploadCategoryImage.array('image', 6),
   validateCategory,
   categoryController.updateCategory
 );

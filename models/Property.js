@@ -55,11 +55,11 @@ const propertySchema = new mongoose.Schema({
     maxlength: [1000, 'Description cannot exceed 1000 characters']
   },
   images: [{
-    type: String, // Array of image URLs
+    type: String, 
     trim: true
   }],
   video: {
-    type: String, // Optional video URL
+    type: String, 
     trim: true
   },
   createdAt: {

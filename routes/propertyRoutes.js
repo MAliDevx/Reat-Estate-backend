@@ -11,7 +11,7 @@ router.get('/:id', propertyController.getPropertyById);
 
 router.post('/',
   uploadPropertyImages.fields([
-    { name: 'images', maxCount: 10 },
+    { name: 'images', maxCount: 6 },
     { name: 'video', maxCount: 1 }
   ]),
   validateProperty,
@@ -20,7 +20,7 @@ router.post('/',
 
 router.put('/:id',
   uploadPropertyImages.fields([
-    { name: 'images', maxCount: 10 },
+    { name: 'images', maxCount: 6 },
     { name: 'video', maxCount: 1 }
   ]),
   validateProperty,

@@ -68,10 +68,16 @@ exports.createCategory = async (req, res, next) => {
 
     const categoryData = { ...req.body };
 
-    if (req.file) {
-      const imageUrl = await uploadToCloudinary(req.file, 'real-estate/categories');
-      categoryData.image = imageUrl;
-    }
+if (req.files && req.files.length > 0) {
+  const imageUrls = [];
+
+  for (const file of req.files) {
+    const url = await uploadToCloudinary(file, 'real-estate/categories');
+    imageUrls.push(url);
+  }
+
+  categoryData.image = imageUrls;
+}
 
     const category = await Category.create(categoryData);
 
@@ -104,10 +110,21 @@ exports.updateCategory = async (req, res, next) => {
 
     const categoryData = { ...req.body };
 
-    if (req.file) {
-      const imageUrl = await uploadToCloudinary(req.file, 'real-estate/categories');
-      categoryData.image = imageUrl;
-    }
+  if (req.files && req.files.length > 0) {
+  const existingCategory = await Category.findById(req.params.id);
+
+  const newImageUrls = [];
+
+  for (const file of req.files) {
+    const url = await uploadToCloudinary(file, 'real-estate/categories');
+    newImageUrls.push(url);
+  }
+
+  categoryData.image = [
+    ...(existingCategory.image || []),
+    ...newImageUrls
+  ];
+}
 
     const category = await Category.findByIdAndUpdate(
       req.params.id,

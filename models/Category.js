@@ -23,10 +23,10 @@ const categorySchema = new mongoose.Schema({
     },
     default: 'Active'
   },
-  image: {
-    type: String, // Single image path
+ image: [{
+    type: String, 
     trim: true
-  },
+  }],
   createdAt: {
     type: Date,
     default: Date.now
