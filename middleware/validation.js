@@ -46,22 +46,22 @@ const validateProperty = [
   body('description')
     .optional()
     .trim()
-    .isLength({ max: 1000 })
-    .withMessage('Description cannot exceed 1000 characters')
+    .isLength({ max: 3000 })
+    .withMessage('Description cannot exceed 3000 characters')
 ];
 
 // Category validation rules
 const validateCategory = [
   body('name')
     .trim()
-    .isLength({ min: 1, max: 50 })
+    .isLength({ min: 1, max: 100 })
     .withMessage('Category name must be between 1 and 50 characters'),
 
   body('description')
     .optional()
     .trim()
-    .isLength({ max: 500 })
-    .withMessage('Description cannot exceed 500 characters'),
+    .isLength({ max: 3000 })
+    .withMessage('Description cannot exceed 3000 characters'),
 
   body('status')
     .isIn(['Active', 'Inactive'])
@@ -72,8 +72,8 @@ const validateCategory = [
 const validateContact = [
   body('name')
     .trim()
-    .isLength({ min: 1, max: 100 })
-    .withMessage('Name must be between 1 and 100 characters'),
+    .isLength({ min: 1, max: 200 })
+    .withMessage('Name must be between 1 and 200 characters'),
 
   body('email')
     .isEmail()
@@ -87,8 +87,8 @@ const validateContact = [
 
   body('message')
     .trim()
-    .isLength({ min: 1, max: 1000 })
-    .withMessage('Message must be between 1 and 1000 characters')
+    .isLength({ min: 1, max: 4000 })
+    .withMessage('Message must be between 1 and 4000 characters')
 ];
 
 module.exports = {

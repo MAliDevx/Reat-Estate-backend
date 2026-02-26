@@ -2,10 +2,8 @@ const Contact = require('../models/Contact');
 const nodemailer = require('nodemailer');
 const { validationResult } = require('express-validator');
 
-// Create contact message and send email
 exports.createContact = async (req, res, next) => {
   try {
-    // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -15,15 +13,12 @@ exports.createContact = async (req, res, next) => {
       });
     }
 
-    // Save contact to database
     const contact = await Contact.create(req.body);
 
-    // Send email to admin
     try {
       await sendContactEmail(contact);
     } catch (emailError) {
       console.error('Email sending failed:', emailError);
-      // Don't fail the request if email fails, just log it
     }
 
     res.status(201).json({
@@ -36,7 +31,6 @@ exports.createContact = async (req, res, next) => {
   }
 };
 
-// Get all contact messages (admin only)
 exports.getAllContacts = async (req, res, next) => {
   try {
     const { page = 1, limit = 10 } = req.query;
@@ -66,7 +60,6 @@ exports.getAllContacts = async (req, res, next) => {
   }
 };
 
-// Get single contact by ID
 exports.getContactById = async (req, res, next) => {
   try {
     const contact = await Contact.findById(req.params.id);
@@ -87,7 +80,6 @@ exports.getContactById = async (req, res, next) => {
   }
 };
 
-// Delete contact message
 exports.deleteContact = async (req, res, next) => {
   try {
     const contact = await Contact.findByIdAndDelete(req.params.id);
@@ -108,20 +100,17 @@ exports.deleteContact = async (req, res, next) => {
   }
 };
 
-// Helper function to send contact email
 const sendContactEmail = async (contact) => {
-  // Create transporter
-  const transporter = nodemailer.createTransporter({
-    host: process.env.EMAIL_HOST,
-    port: process.env.EMAIL_PORT,
-    secure: process.env.EMAIL_SECURE === 'true',
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS
-    }
-  });
+const transporter = nodemailer.createTransport({
+  host: process.env.EMAIL_HOST,
+  port: parseInt(process.env.EMAIL_PORT),
+  secure: process.env.EMAIL_SECURE === 'true',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
 
-  // Email content
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: process.env.ADMIN_EMAIL,
@@ -145,6 +134,5 @@ const sendContactEmail = async (contact) => {
     `
   };
 
-  // Send email
   await transporter.sendMail(mailOptions);
 };
