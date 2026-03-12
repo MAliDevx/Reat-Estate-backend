@@ -35,10 +35,7 @@ const propertySchema = new mongoose.Schema({
   category: {
     type: String,
     required: [true, 'Category is required'],
-    enum: {
-      values: ['Apartment', 'Villa', 'Residential Plot', 'Commercial'],
-      message: 'Category must be one of: Apartment, Villa, Residential Plot, Commercial'
-    }
+ 
   },
   status: {
     type: String,

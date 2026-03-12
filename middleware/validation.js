@@ -35,10 +35,6 @@ const validateProperty = [
     .isInt({ min: 0 })
     .withMessage('Bathrooms must be a non-negative integer'),
 
-  body('category')
-    .isIn(['Apartment', 'Villa', 'Residential Plot', 'Commercial'])
-    .withMessage('Category must be one of: Apartment, Villa, Residential Plot, Commercial'),
-
   body('status')
     .isIn(['Available', 'Pending', 'Sold'])
     .withMessage('Status must be one of: Available, Pending, Sold'),
