@@ -1,16 +1,29 @@
 const mongoose = require('mongoose');
 
+// Cache the connection across serverless invocations
+let isConnected = false;
+
 const connectDB = async () => {
+  if (isConnected) return;
+
+  // Reuse an existing connection if mongoose already has one
+  if (mongoose.connection.readyState >= 1) {
+    isConnected = true;
+    return;
+  }
+
   try {
-    console.log("Connecting to:", process.env.MONGODB_URL);
+    await mongoose.connect(process.env.MONGODB_URL, {
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
+    });
 
-    const conn = await mongoose.connect(process.env.MONGODB_URL);
-
-    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+    isConnected = true;
+    console.log(`✅ MongoDB Connected: ${mongoose.connection.host}`);
   } catch (error) {
     console.error('❌ MongoDB connection error:', error.message);
-    console.error('Server will continue but DB operations will fail until reconnected.');
+    throw error; // let the request handler return a proper 500
   }
 };
 
-module.exports = connectDB; /// use this in main ; connectDB()
+module.exports = connectDB;

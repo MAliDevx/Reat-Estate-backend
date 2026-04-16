@@ -7,7 +7,17 @@ const connectDB = require('./config/database');
 
 const app = express();
 
-connectDB();
+// On Vercel (serverless) there is no persistent process, so we connect
+// on every cold start. connectDB() caches the connection so warm
+// invocations skip the round-trip.
+app.use(async (_req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Database connection failed' });
+  }
+});
 
 const corsOptions = {
   origin: '*',
